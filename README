@@ -1,0 +1,29 @@
+
+               authphpbb3 DokuWiki HTTP authentication plugin
+         Copyright (c) 2013 Alexander Diev <ostravadr@gmail.com>
+           Licensed under the GNU Public License (GPL) version 3
+
+
+NOTE: This auth plugin requires DokuWiki WeatherWax (2013-05-10a) or later!
+
+
+DESCRIPTION
+
+
+
+INSTALLATION
+
+Download the latest version from ...
+and rename the extracted directory to "authhttp", otherwise the plugin won't
+work.
+
+Please refer to http://www.dokuwiki.org/plugins for additional info
+on how to install plugins in DokuWiki.
+
+
+CONFIGURATION AND SETTINGS
+
+
+
+REFERENCES
+

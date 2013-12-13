@@ -1,0 +1,7 @@
+base   authphpbb3
+author Alexander Diev
+email  ostravadr@gmail.com
+date   2013-12-05
+name   authphpbb3 plugin
+desc   Authenticate against phpbb3 forum authentication credentials
+url    https://www.dokuwiki.org/plugin:authphpbb3
