@@ -82,10 +82,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
             }
         }	
 			
-			
-			
-			
- 
+	$this->success = true;		
  
     }
 
@@ -97,9 +94,10 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
      * @return  bool
      */
     public function checkPass($user, $pass) {
-        return ($user == $_SERVER['PHP_AUTH_USER'] && $pass == $_SERVER['PHP_AUTH_PW']);
+        return false;
     }
 
+	
     /**
      * Return user info
      *
@@ -114,17 +112,33 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
      * @return  array containing user data or false
      */
     public function getUserData($user) {
-        global $conf;
-
-        $info['name'] = $user;
-        $info['mail'] = $user."@".$this->emaildomain;
-        $info['grps'] = array($conf['defaultgroup']);
-        if (in_array($user, $this->specialusers)) {
-            $info['grps'][] = $this->specialgroup;
-        }
-
-        return $info;
+        return false;
     }
+	
+	function trustExternal($user, $pass, $sticky=false) {
+    global $USERINFO;
+ 
+    //situation: no login form used or logged in successful 
+ 
+ 
+    // check where if there is a logged in user e.g from session,
+    // $_SERVER or what your auth backend supplies...
+ 
+    if( ...check here if there is a logged in user...) {
+ 
+        $USERINFO['name'] = string
+        $USERINFO['mail'] = string
+        $USERINFO['grps'] = array()
+ 
+        $_SERVER['REMOTE_USER']                = $user; //userid
+        $_SESSION[DOKU_COOKIE]['auth']['user'] = $user; //userid
+        $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;
+ 
+        return true;
+    }else{
+        //when needed, logoff explicitly.
+    }
+	}
 }
 
 // vim:ts=4:sw=4:et:
