@@ -118,39 +118,54 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 	function trustExternal($user, $pass, $sticky=false) {
     global $USERINFO;
  
-    //situation: no login form used or logged in successful 
+        //situation: no login form used or logged in successful 
 	
-	// connect to mysql 
-	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
-	if (!$link) {
+    	// connect to mysql 
+    	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
+	    if (!$link) {
 //     die('Could not connect: <br />' . mysql_error());
-		msg ("Database error. Contact wiki administrator", -1);
-		return false;
-	}
-	// select forum database
-	if (!mysql_select_db($this->phpbb3_dbname)) {
-		msg ("Database error. Contact wiki administrator", -1);
-		mysql_close($link);
-		return false;
-	};
- 
-    // check where if there is a logged in user e.g from session,
-    // $_SERVER or what your auth backend supplies...
- 
-    if( ...check here if there is a logged in user...) {
- 
-        $USERINFO['name'] = string
-        $USERINFO['mail'] = string
-        $USERINFO['grps'] = array()
- 
-        $_SERVER['REMOTE_USER']                = $user; //userid
-        $_SESSION[DOKU_COOKIE]['auth']['user'] = $user; //userid
-        $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;
- 
-        return true;
-    }else{
-        //when needed, logoff explicitly.
-    }
+	    	msg ("Database error. Contact wiki administrator", -1);
+    		return false;
+	    }
+
+        // set codepage to utf-8
+        mysql_set_charset ( "utf8", $link );
+
+	    // select forum database
+    	if (!mysql_select_db($this->phpbb3_dbname)) {
+	    	msg ("Database error. Contact wiki administrator", -1);
+	    	mysql_close($link);
+	    	return false;
+	    };
+
+        // query for cookie_name
+        $query = "select config_name, config_value 
+                    from " . $this->phpbb3_table_prefix . "config 
+                    where config_name = 'cookie_name';";
+        $rs = mysql_query($query);
+        $row = mysql_fetch_array($rs)
+        $this->phpbb3_cookie_name = $row['config_value'] . "_sid";
+        unset($rs, $row);
+//// \\\\\\\\\\\\\\\\\\\\\\\\
+
+    
+        // check where if there is a logged in user e.g from session,
+        // $_SERVER or what your auth backend supplies...
+    
+        if( ...check here if there is a logged in user...) {
+    
+            $USERINFO['name'] = string
+            $USERINFO['mail'] = string
+            $USERINFO['grps'] = array()
+    
+            $_SERVER['REMOTE_USER']                = $user; //userid
+            $_SESSION[DOKU_COOKIE]['auth']['user'] = $user; //userid
+            $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;
+    
+            return true;
+        }else{
+            //when needed, logoff explicitly.
+        }
 	}
 }
 
