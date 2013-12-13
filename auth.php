@@ -67,13 +67,13 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 
 		include ($phpbb3config);	
 
-		$this->dbhost = $dbhost;
-		$this->dbname = $dbname;
-		$this->dbuser = $dbuser;
-		$this->dbpasswd = $dbpasswd;
-		$this->table_prefix = $table_prefix;
+		$this->phpbb3_dbhost = $dbhost;
+		$this->phpbb3_dbname = $dbname;
+		$this->phpbb3_dbuser = $dbuser;
+		$this->phpbb3_dbpasswd = $dbpasswd;
+		$this->phpbb3_table_prefix = $table_prefix;
 		
-        foreach (array("dbhost", "dbname", "dbuser", "dbpasswd") as $cfgvar) {
+        foreach (array("phpbb3_dbhost", "phpbb3_dbname", "phpbb3_dbuser", "phpbb3_dbpasswd") as $cfgvar) {
             if (!$this->$cfgvar) {
 				msg ("Configuration error. Contact wiki administrator", -1);
 //                 msg("Config error: \"$cfgvar\" not set!", -1);
@@ -119,7 +119,20 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
     global $USERINFO;
  
     //situation: no login form used or logged in successful 
- 
+	
+	// connect to mysql 
+	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
+	if (!$link) {
+//     die('Could not connect: <br />' . mysql_error());
+		msg ("Database error. Contact wiki administrator", -1);
+		return false;
+	}
+	// select forum database
+	if (!mysql_select_db($this->phpbb3_dbname)) {
+		msg ("Database error. Contact wiki administrator", -1);
+		mysql_close($link);
+		return false;
+	};
  
     // check where if there is a logged in user e.g from session,
     // $_SERVER or what your auth backend supplies...
