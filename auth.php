@@ -140,12 +140,49 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 
         // query for cookie_name
         $query = "select config_name, config_value 
-                    from " . $this->phpbb3_table_prefix . "config 
+                    from {$this->phpbb3_table_prefix}config 
                     where config_name = 'cookie_name';";
         $rs = mysql_query($query);
-        $row = mysql_fetch_array($rs)
-        $this->phpbb3_cookie_name = $row['config_value'] . "_sid";
+        if (!($row = mysql_fetch_array($rs))){
+        // some error in db structure 
+            return false;
+        };
+        $this->phpbb3_cookie_name = $row["config_value"] . "_sid";
         unset($rs, $row);
+
+        // get forum sid from cookie
+        $this->phpbb3_sid = $_COOKIE[$this->phpbb3_cookie_name];
+
+        // check potential vulnerability - modification $this->phpbb3_sid with sql injection 
+        // forum sid can be headecimal digit only, check prevent any "union", "select" etc
+        if (!ctype_xdigit($this->phpbb3_sid)){
+        // wrong sid
+            return false;
+        }
+
+        // get session data from db
+        $query = "select session_id, session_user_id 
+                    from {$this->phpbb3_table_prefix}sessions 
+                    where session_id = '{$this->phpbb3_cookie_name}';";
+        $rs = mysql_query($query);
+        if (!($row = mysql_fetch_array($rs))){
+        // session is not found in db - guest access only
+            return false;
+        };
+        $this->phpbb3_userid = $row["session_user_id"]
+        unset($rs, $row);
+
+        // check for guest session
+        if ($this->phpbb3_userid == 1){
+        // session_user_id == 1 on guest session
+            return false;
+        };
+
+        
+
+
+
+
 //// \\\\\\\\\\\\\\\\\\\\\\\\
 
     
