@@ -178,7 +178,20 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
             return false;
         };
 
-        
+        // get username from db
+        $query = "select user_id, username  
+                    from {$this->phpbb3_table_prefix}users 
+                    where user_id = '{$this->phpbb3_userid}';";
+        $rs = mysql_query($query);
+        if (!($row = mysql_fetch_array($rs))){
+        // where is no userid in db
+            return false;
+        };
+        $this->phpbb3_username = $row["username"];
+        unset($rs, $row);
+
+        // get realname from db
+
 
 
 
