@@ -53,14 +53,16 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		
 		// set and check the config values
 		$phpbb3config = $this->getConf("phpbb3config");
-        if (!$$phpbb3config) {
-		    // Error #1: $phpbb3config not set
+        if (!$phpbb3config) {
+		    // Error : $phpbb3config not set
+			dbglog("authphpbb3 error: phpbb3config is not set"); 
             msg("Configuration error. Contact wiki administrator", -1);
             $this->success = false;
             return;}
 
-		if (!file_exists($filename)) {
-		    // Error #2: phpbb3 config file not found
+		if (!file_exists($phpbb3config)) {
+		    // Error: phpbb3 config file not found
+			dbglog("authphpbb3 error: phpbb3 config {$phpbb3config} not found"); 
             msg("Configuration error. Contact wiki administrator", -1);
             $this->success = false;
             return;}
@@ -76,7 +78,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         foreach (array("phpbb3_dbhost", "phpbb3_dbname", "phpbb3_dbuser", "phpbb3_dbpasswd") as $cfgvar) {
             if (!$this->$cfgvar) {
 				msg ("Configuration error. Contact wiki administrator", -1);
-//                 msg("Config error: \"$cfgvar\" not set!", -1);
+				dbglog("authphpbb3 error: phpbb3 config variable {$cfgvar} not set");
                  $this->success = false;
                  return;
             }
@@ -123,7 +125,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
     	// connect to mysql 
     	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
 	    if (!$link) {
-//     die('Could not connect: <br />' . mysql_error());
+			dbglog("authphpbb3 error: can't connect to database server");
 	    	msg ("Database error. Contact wiki administrator", -1);
     		return false;
 	    }
@@ -133,6 +135,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 
 	    // select forum database
     	if (!mysql_select_db($this->phpbb3_dbname)) {
+			dbglog("authphpbb3 error: can't use database");
 	    	msg ("Database error. Contact wiki administrator", -1);
 	    	mysql_close($link);
 	    	return false;
@@ -144,7 +147,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
                     where config_name = 'cookie_name'";
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
-        // some error in db structure 
+		dbglog("authphpbb3 error: some error in db structure");
             return false;
         };
         $this->phpbb3_cookie_name = $row["config_value"] . "_sid";
@@ -152,21 +155,23 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 
         // get forum sid from cookie
         $this->phpbb3_sid = $_COOKIE[$this->phpbb3_cookie_name];
-
+		
         // check potential vulnerability - modification $this->phpbb3_sid with sql injection 
         // forum sid can be headecimal digit only, check prevent any "union", "select" etc
         if (!ctype_xdigit($this->phpbb3_sid)){
-        // wrong sid
+		// wrong sid
+			dbglog("authphpbb3 error: wrong phpbb3 sid in cookie");
             return false;
         }
 
         // get session data from db
         $query = "select session_id, session_user_id 
                     from {$this->phpbb3_table_prefix}sessions 
-                    where session_id = '{$this->phpbb3_cookie_name}';";
+                    where session_id = '{$this->phpbb3_sid}';";
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
-        // session is not found in db - guest access only
+		// session is not found in db - guest access only	
+			dbglog("authphpbb3 error: session is not found in db - guest access only");
             return false;
         };
         $this->phpbb3_userid = $row["session_user_id"];
@@ -174,7 +179,8 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 
         // check for guest session
         if ($this->phpbb3_userid == 1){
-        // session_user_id == 1 on guest session
+		// session_user_id == 1 on guest session
+		dbglog("authphpbb3 error: session_user_id == 1 on guest session");
             return false;
         };
 
@@ -185,6 +191,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
         // where is no userid in db
+			dbglog("authphpbb3 error: where is no userid in db");
             return false;
         };
         $this->phpbb3_username = $row["username"];
@@ -192,20 +199,19 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		unset($rs, $row);
 
         // get user groups from db
-		$query = "select user_id, group_id, group_name
+		$query = "select *
 					from {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}user_group ug 
 					where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.user_id={$this->phpbb3_userid}";
-        $rs = mysql_query($query);
-		if($rs !== false && count($rs)) {			
-			while($row = mysql_fetch_array($rs)) 
+		$rs = mysql_query($query);
+		while($row = mysql_fetch_array($rs)) 
 			{
 				// fill array of groups names whith data from db
 				$this->phpbb3_groups[] = $row['group_name'];
 			};
-		}
-		else
+		if(!($this->phpbb3_groups))
 		{
-			// whwre is no group info in db, guest access only
+			// where is no group info in db, guest access only
+			dbglog("authphpbb3 error: where is no group info in db, guest access only");
 			return false;
 		};
 		unset($rs, $row);
@@ -221,12 +227,16 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 			$USERINFO['name'] = $this->phpbb3_username;
 		};
 		
+		mysql_close($link);
+		
 		$USERINFO['mail'] = $this->phpbb3_user_email;
 		$USERINFO['grps'] = $this->phpbb3_groups;
 
         $_SERVER['REMOTE_USER']                = $this->phpbb3_username; //userid
         $_SESSION[DOKU_COOKIE]['auth']['user'] = $this->phpbb3_username; //userid
-        $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;		
+        $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;	
+
+		return true;
 
 	}
 }
