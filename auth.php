@@ -44,7 +44,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $this->cando['modGroups']   = false; // can groups be changed?
         $this->cando['getUsers']    = false; // can a (filtered) list of users be retrieved?
         $this->cando['getUserCount']= false; // can the number of users be retrieved?
-        $this->cando['getGroups']   = false; // can a list of available groups be retrieved?
+        $this->cando['getGroups']   = true; // can a list of available groups be retrieved?
         $this->cando['external']    = true; // does the module do external auth checking?
         $this->cando['logout']      = false; // can the user logout again? 
 
@@ -239,6 +239,52 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		return true;
 
 	}
+
+    public function retrieveGroups($start=0,$limit=0) {
+
+   	// connect to mysql 
+    	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
+	    if (!$link) {
+			dbglog("authphpbb3 error: can't connect to database server");
+	    	msg ("Database error. Contact wiki administrator", -1);
+    		return false;
+	    }
+
+    // set codepage to utf-8
+        mysql_set_charset ( "utf8", $link );
+
+	// select forum database
+    	if (!mysql_select_db($this->phpbb3_dbname)) {
+			dbglog("authphpbb3 error: can't use database");
+	    	msg ("Database error. Contact wiki administrator", -1);
+	    	mysql_close($link);
+	    	return false;
+	    };
+    
+    if (limit > 0) {
+    // get groups from db
+		$query = "select *
+					from {$this->phpbb3_table_prefix}groups 
+					where 1 = 1
+                    order by group_name
+                    limit {$start} {$limit}";
+		$rs = mysql_query($query);
+		while($row = mysql_fetch_array($rs)) 
+			{
+				// fill array of groups names whith data from db
+				$tmpvar[] = $row['group_name'];
+			};
+        mysql_close($link);
+        return $tmpvar;
+        }
+        else{
+            mysql_close($link);
+            return false;
+        }
+
+    }
+
+
 }
 
 // vim:ts=4:sw=4:et:

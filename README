@@ -30,7 +30,7 @@ CONFIGURATION AND SETTINGS
 	(groups) or|and user (users) who will have administrative access to wiki, as it configured in the phpbb3 
 	(usualy - @ADMINISTRATORS).
 4. "Configuration Manager" -> "Plugin Settings" -> "phpbb3 authentication plugin" -> "Path to phpbb3 config file" 
-	(phpbb3config): path to phpbb3 config file (with filename) from root of wiki. 
+	(phpbb3config): absolute (no relative!) path to phpbb3 config file with filename. 
 	Default: "../config.php" - if wiki installed in subdirectory of forum.
 5. "Configuration Manager" -> "Plugin Settings" -> "phpbb3 authentication plugin" -> "Field with real name (if exist)"
 	(realnamefield). If in your phpbb3 forum configured extended profile field, consist real name of user, enter name of 
