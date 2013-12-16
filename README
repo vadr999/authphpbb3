@@ -9,12 +9,13 @@ NOTE: This auth plugin requires DokuWiki WeatherWax (2013-05-10a) or later!
 
 DESCRIPTION
 
-
+This auth plugin authenticate users from phpbb3-based forum. Wiki must be installed in the same host with 
+phpbb3-based forum, must have access to phpbb3 config file and database (at this time - mysql only).
 
 INSTALLATION
 
-Download the latest version from ...
-and rename the extracted directory to "authhttp", otherwise the plugin won't
+Download the latest version from https://github.com/vadr999/authphpbb3/zipball/master
+and rename the extracted directory to "authphpbb3", otherwise the plugin won't
 work.
 
 Please refer to http://www.dokuwiki.org/plugins for additional info
@@ -23,7 +24,20 @@ on how to install plugins in DokuWiki.
 
 CONFIGURATION AND SETTINGS
 
+1. "Manage Plugins": plugin "authphpbb3" must be enabled.
+2. "Configuration Manager" -> "Authentication Settings" -> "Authentication backend" (authtype): select "authphpbb3".
+3. "Configuration Manager" -> "Authentication Settings" -> "Superuser - group..." (superuser): enter name of group 
+	(groups) or|and user (users) who will have administrative access to wiki, as it configured in the phpbb3 
+	(usualy - @ADMINISTRATORS).
+4. "Configuration Manager" -> "Plugin Settings" -> "phpbb3 authentication plugin" -> "Path to phpbb3 config file" 
+	(phpbb3config): path to phpbb3 config file (with filename) from root of wiki. 
+	Default: "../config.php" - if wiki installed in subdirectory of forum.
+5. "Configuration Manager" -> "Plugin Settings" -> "phpbb3 authentication plugin" -> "Field with real name (if exist)"
+	(realnamefield). If in your phpbb3 forum configured extended profile field, consist real name of user, enter name of 
+	field here. Otherwise leave it blank and username will be used instead.
+6. Use groupnames configured in phpbb3 for manage acl's of you wiki.
+7. In case of any problem you can enable debug mode ("Configuration Manager" -> "Basic Settings" -> "allowdebug"). Debug 
+	info will be in file "data/cache/debug.log". Please see https://www.dokuwiki.org/config:allowdebug , 
+	https://www.dokuwiki.org/devel:debugging
 
-
-REFERENCES
 
