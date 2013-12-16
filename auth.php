@@ -52,7 +52,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $this->loadConfig();
 		
 		// set and check the config values
-		$phpbb3config = $this->getConf("$phpbb3config");
+		$phpbb3config = $this->getConf("phpbb3config");
         if (!$$phpbb3config) {
 		    // Error #1: $phpbb3config not set
             msg("Configuration error. Contact wiki administrator", -1);
@@ -141,7 +141,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         // query for cookie_name
         $query = "select config_name, config_value 
                     from {$this->phpbb3_table_prefix}config 
-                    where config_name = 'cookie_name';";
+                    where config_name = 'cookie_name'";
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
         // some error in db structure 
@@ -169,7 +169,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         // session is not found in db - guest access only
             return false;
         };
-        $this->phpbb3_userid = $row["session_user_id"]
+        $this->phpbb3_userid = $row["session_user_id"];
         unset($rs, $row);
 
         // check for guest session
@@ -179,43 +179,55 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         };
 
         // get username from db
-        $query = "select user_id, username  
+        $query = "select user_id, username, user_email 
                     from {$this->phpbb3_table_prefix}users 
-                    where user_id = '{$this->phpbb3_userid}';";
+                    where user_id = '{$this->phpbb3_userid}'";
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
         // where is no userid in db
             return false;
         };
         $this->phpbb3_username = $row["username"];
-        unset($rs, $row);
+		$this->phpbb3_user_email = $row["user_email"];
+		unset($rs, $row);
 
-        // get realname from db
+        // get user groups from db
+		$query = "select user_id, group_id, group_name
+					from {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}user_group ug 
+					where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.user_id={$this->phpbb3_userid}";
+        $rs = mysql_query($query);
+		if($rs !== false && count($rs)) {			
+			while($row = mysql_fetch_array($rs)) 
+			{
+				// fill array of groups names whith data from db
+				$this->phpbb3_groups[] = $row['group_name'];
+			};
+		}
+		else
+		{
+			// whwre is no group info in db, guest access only
+			return false;
+		};
+		unset($rs, $row);
+		
+		// now we have info about logged in user and can fill $USERINFO
+				
+		// get realname from db - may be missing
+		$query = "select user_id, pf_{$this->getConf("realnamefield")} from {$this->phpbb3_table_prefix}profile_fields_data where user_id = '{$this->phpbb3_userid}'";
+        if ($rs = mysql_query($query)){
+			$USERINFO['name'] = (($row = mysql_fetch_array($rs)) ? $row["pf_{$this->getConf("realnamefield")}"] : $this->phpbb3_username);
+		}
+		else{
+			$USERINFO['name'] = $this->phpbb3_username;
+		};
+		
+		$USERINFO['mail'] = $this->phpbb3_user_email;
+		$USERINFO['grps'] = $this->phpbb3_groups;
 
+        $_SERVER['REMOTE_USER']                = $this->phpbb3_username; //userid
+        $_SESSION[DOKU_COOKIE]['auth']['user'] = $this->phpbb3_username; //userid
+        $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;		
 
-
-
-
-//// \\\\\\\\\\\\\\\\\\\\\\\\
-
-    
-        // check where if there is a logged in user e.g from session,
-        // $_SERVER or what your auth backend supplies...
-    
-        if( ...check here if there is a logged in user...) {
-    
-            $USERINFO['name'] = string
-            $USERINFO['mail'] = string
-            $USERINFO['grps'] = array()
-    
-            $_SERVER['REMOTE_USER']                = $user; //userid
-            $_SESSION[DOKU_COOKIE]['auth']['user'] = $user; //userid
-            $_SESSION[DOKU_COOKIE]['auth']['info'] = $USERINFO;
-    
-            return true;
-        }else{
-            //when needed, logoff explicitly.
-        }
 	}
 }
 
