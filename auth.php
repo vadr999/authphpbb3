@@ -267,7 +267,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 					from {$this->phpbb3_table_prefix}groups 
 					where 1 = 1
                     order by group_name
-                    limit {$start} {$limit}";
+                    limit {$start}, {$limit}";
 		$rs = mysql_query($query);
 		while($row = mysql_fetch_array($rs)) 
 			{
