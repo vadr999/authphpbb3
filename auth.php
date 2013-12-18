@@ -10,6 +10,13 @@
  * @author  Alexander Diev <ostravadr@gmail.com>
  */
 
+/*
+* Version history:
+* v0.0.1 - initial release
+* issue #1: session expiring if no activity in forum
+*/
+ 
+ 
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
