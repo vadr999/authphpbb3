@@ -14,6 +14,8 @@
 * Version history:
 * v0.0.1 - initial release
 * issue #1: session expiring if no activity in forum
+* v0.0.2 - issue #1 is fixed
+*
 */
  
  
@@ -164,7 +166,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $this->phpbb3_sid = $_COOKIE[$this->phpbb3_cookie_name];
 		
         // check potential vulnerability - modification $this->phpbb3_sid with sql injection 
-        // forum sid can be headecimal digit only, check prevent any "union", "select" etc
+        // forum sid can be hexadecimal digit only, check prevent any "union", "select" etc
         if (!ctype_xdigit($this->phpbb3_sid)){
 		// wrong sid
 			dbglog("authphpbb3 error: wrong phpbb3 sid in cookie");
@@ -174,7 +176,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         // get session data from db
         $query = "select session_id, session_user_id 
                     from {$this->phpbb3_table_prefix}sessions 
-                    where session_id = '{$this->phpbb3_sid}';";
+                    where session_id = '{$this->phpbb3_sid}'";
         $rs = mysql_query($query);
         if (!($row = mysql_fetch_array($rs))){
 		// session is not found in db - guest access only	
@@ -182,7 +184,17 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
             return false;
         };
         $this->phpbb3_userid = $row["session_user_id"];
+		$this->phpbb3_sessiontime = $row["session_time"];
         unset($rs, $row);
+		
+		// update session time on page load (this function is called every time on page load)
+		$current_time = time();
+		if ($current_time > $this->phpbb3_sessiontime){
+			$query = "update {$this->phpbb3_table_prefix}sessions 
+						set session_time = '{$current_time}' 
+						where session_id = '{$this->phpbb3_sid}'";
+			mysql_query($query);
+		};
 
         // check for guest session
         if ($this->phpbb3_userid == 1){
