@@ -123,7 +123,60 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
      * @return  array containing user data or false
      */
     public function getUserData($user) {
-        return false;
+	
+    	// connect to mysql 
+    	$link = mysql_connect($this->phpbb3_dbhost, $this->phpbb3_dbuser, $this->phpbb3_dbpasswd); 
+	    if (!$link) {
+			dbglog("authphpbb3 error: can't connect to database server");
+	    	msg ("Database error. Contact wiki administrator", -1);
+    		return false;
+	    }
+
+        // set codepage to utf-8
+        mysql_set_charset ( "utf8", $link );
+
+	    // select forum database
+    	if (!mysql_select_db($this->phpbb3_dbname)) {
+			dbglog("authphpbb3 error: can't use database");
+	    	msg ("Database error. Contact wiki administrator", -1);
+	    	mysql_close($link);
+	    	return false;
+	    };
+		
+		// set realname field
+		$realnamefield = "pf_" . $this->getConf("realnamefield");
+        // get user data from db
+		if ($realnamefield == "pf_"){
+        $query = "select u.username, u.user_email, g.group_name
+                    from {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}user_group ug
+                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.username = '{$user}'"}
+		else {
+        $query = "select u.username, u.user_email, g.group_name, pf.{$realnamefield}
+                    from {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}user_group ug, {$this->phpbb3_table_prefix}profile_fields_data pf
+                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND pf.user_id = u.user_id AND u.username = '{$user}'"};
+		
+        $rs = mysql_query($query);
+		if (!$rs) {
+        // where is no name in db
+			dbglog("authphpbb3 error: where is no username in db");
+            return false;
+        }
+		else{ 
+			while($row = mysql_fetch_array($rs)) 
+			{
+				// fill array of groups names whith data from db
+				$tmpvar['grps'][] = $row['group_name'];
+			};
+			$tmpvar['name'] = ( ($realnamefield == "pf_") ? $user : $row["{$realnamefield}"];);
+			$tmpvar['mail'] = $row['user_email'];
+		}.
+
+		unset($rs, $row);		
+		
+	mysql_close($link);	
+	
+	return $tmpvar;
+
     }
 	
 	function trustExternal($user, $pass, $sticky=false) {
