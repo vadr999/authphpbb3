@@ -136,7 +136,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         mysql_set_charset ( "utf8", $link );
 
 	    // select forum database
-    	if (!mysql_select_db($this->phpbb3_dbname)) {
+    	if (!mysql_select_db($this->phpbb3_dbname, $link )) {
 			dbglog("authphpbb3 error: can't use database");
 	    	msg ("Database error. Contact wiki administrator", -1);
 	    	mysql_close($link);
@@ -155,7 +155,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
                     from {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}user_group ug, {$this->phpbb3_table_prefix}profile_fields_data pf
                     where u.user_id = ug.user_id AND g.group_id = ug.group_id AND pf.user_id = u.user_id AND u.username = '{$user}'"};
 		
-        $rs = mysql_query($query);
+        $rs = mysql_query($query, $link );
 		if (!$rs) {
         // where is no name in db
 			dbglog("authphpbb3 error: where is no username in db");
@@ -196,7 +196,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         mysql_set_charset ( "utf8", $link );
 
 	    // select forum database
-    	if (!mysql_select_db($this->phpbb3_dbname)) {
+    	if (!mysql_select_db($this->phpbb3_dbname, $link )) {
 			dbglog("authphpbb3 error: can't use database");
 	    	msg ("Database error. Contact wiki administrator", -1);
 	    	mysql_close($link);
@@ -207,7 +207,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $query = "select config_name, config_value 
                     from {$this->phpbb3_table_prefix}config 
                     where config_name = 'cookie_name'";
-        $rs = mysql_query($query);
+        $rs = mysql_query($query, $link );
         if (!($row = mysql_fetch_array($rs))){
 		dbglog("authphpbb3 error: some error in db structure");
             return false;
@@ -230,7 +230,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $query = "select session_id, session_user_id 
                     from {$this->phpbb3_table_prefix}sessions 
                     where session_id = '{$this->phpbb3_sid}'";
-        $rs = mysql_query($query);
+        $rs = mysql_query($query, $link );
         if (!($row = mysql_fetch_array($rs))){
 		// session is not found in db - guest access only	
 			dbglog("authphpbb3 error: session is not found in db - guest access only");
@@ -246,7 +246,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 			$query = "update {$this->phpbb3_table_prefix}sessions 
 						set session_time = '{$current_time}' 
 						where session_id = '{$this->phpbb3_sid}'";
-			mysql_query($query);
+			mysql_query($query, $link );
 		};
 
         // check for guest session
@@ -260,7 +260,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $query = "select user_id, username, user_email 
                     from {$this->phpbb3_table_prefix}users 
                     where user_id = '{$this->phpbb3_userid}'";
-        $rs = mysql_query($query);
+        $rs = mysql_query($query, $link );
         if (!($row = mysql_fetch_array($rs))){
         // where is no userid in db
 			dbglog("authphpbb3 error: where is no userid in db");
@@ -274,7 +274,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		$query = "select *
 					from {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}user_group ug 
 					where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.user_id={$this->phpbb3_userid}";
-		$rs = mysql_query($query);
+		$rs = mysql_query($query, $link );
 		while($row = mysql_fetch_array($rs)) 
 			{
 				// fill array of groups names whith data from db
@@ -292,7 +292,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 				
 		// get realname from db - may be missing
 		$query = "select user_id, pf_{$this->getConf("realnamefield")} from {$this->phpbb3_table_prefix}profile_fields_data where user_id = '{$this->phpbb3_userid}'";
-        if ($rs = mysql_query($query)){
+        if ($rs = mysql_query($query, $link )){
 			$USERINFO['name'] = (($row = mysql_fetch_array($rs)) ? $row["pf_{$this->getConf("realnamefield")}"] : $this->phpbb3_username);
 		}
 		else{
@@ -326,7 +326,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         mysql_set_charset ( "utf8", $link );
 
 	// select forum database
-    	if (!mysql_select_db($this->phpbb3_dbname)) {
+    	if (!mysql_select_db($this->phpbb3_dbname, $link )) {
 			dbglog("authphpbb3 error: can't use database");
 	    	msg ("Database error. Contact wiki administrator", -1);
 	    	mysql_close($link);
@@ -340,7 +340,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 					where 1 = 1
                     order by group_name
                     limit {$start}, {$limit}";
-		$rs = mysql_query($query);
+		$rs = mysql_query($query, $link );
 		while($row = mysql_fetch_array($rs)) 
 			{
 				// fill array of groups names whith data from db
