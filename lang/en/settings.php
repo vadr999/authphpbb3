@@ -7,7 +7,7 @@
 
 $lang['plugin_settings_name'] = 'phpbb3 authentication plugin';
 
-$lang['phpbb3config']  = 'Path to phpbb3 config file';
+$lang['phpbb3rootpath']  = 'Relative path from dokuwiki root directory to phpbb3 root directory';
 $lang['realnamefield']  = 'Field with real name (if exist)';
 
 //Setup VIM: ex: et ts=4 :

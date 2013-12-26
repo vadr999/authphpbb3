@@ -5,5 +5,5 @@
  * @author Alexander Diev <ostravadr@gmail.com>
  */
 
-$conf['phpbb3config']  = '../config.php';
+$conf['phpbb3rootpath']  = '../';
 $conf['realnamefield']  = '';

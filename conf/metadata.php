@@ -5,6 +5,6 @@
  * @author Alexander Diev <ostravadr@gmail.com>
  */
 
-$meta['phpbb3config']  = array('string');
+$meta['phpbb3rootpath']  = array('string');
 $meta['realnamefield']  = array('string');
 

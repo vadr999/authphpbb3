@@ -61,7 +61,11 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
         $this->loadConfig();
 		
 		// set and check the config values
-		$phpbb3config = $this->getConf("phpbb3config");
+		$wikirootpath = realpath(dirname(__FILE__) . "/../../../");
+		$phpbb3relpath = $this->getConf("phpbb3rootpath");
+		$phpbb3relpath = trim ($phpbb3relpath);    // remove (if exist) spases from start/end of path
+		$phpbb3relpath = trim ($phpbb3relpath, "/\\"); // remove (if exist) slashes from start/end of path
+		$phpbb3config = $wikirootpath . '/' . $phpbb3relpath . '/config.php' ;
         if (!$phpbb3config) {
 		    // Error : $phpbb3config not set
 			dbglog("authphpbb3 error: phpbb3config is not set"); 
@@ -149,11 +153,13 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		if ($realnamefield == "pf_"){
         $query = "select u.username, u.user_email, g.group_name
                     from {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}user_group ug
-                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.username = '{$user}'"}
+                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND u.username = '{$user}'";
+		}
 		else {
         $query = "select u.username, u.user_email, g.group_name, pf.{$realnamefield}
                     from {$this->phpbb3_table_prefix}users u, {$this->phpbb3_table_prefix}groups g, {$this->phpbb3_table_prefix}user_group ug, {$this->phpbb3_table_prefix}profile_fields_data pf
-                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND pf.user_id = u.user_id AND u.username = '{$user}'"};
+                    where u.user_id = ug.user_id AND g.group_id = ug.group_id AND pf.user_id = u.user_id AND u.username = '{$user}'";
+		};
 		
         $rs = mysql_query($query, $link );
 		if (!$rs) {
@@ -167,9 +173,9 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 				// fill array of groups names whith data from db
 				$tmpvar['grps'][] = $row['group_name'];
 			};
-			$tmpvar['name'] = ( ($realnamefield == "pf_") ? $user : $row["{$realnamefield}"];);
+			$tmpvar['name'] = ( ($realnamefield == "pf_") ? $user : $row["{$realnamefield}"] );
 			$tmpvar['mail'] = $row['user_email'];
-		}.
+		};
 
 		unset($rs, $row);		
 		
