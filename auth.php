@@ -247,7 +247,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		$this->phpbb3_sessiontime = $row["session_time"];
 		mysql_free_result ($rs);
 		unset($row);
-		
+
 		// update session time on page load (this function is called every time on page load)
 		$current_time = time();
 		if ($current_time > $this->phpbb3_sessiontime){
