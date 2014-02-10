@@ -89,7 +89,7 @@ class auth_plugin_authphpbb3 extends DokuWiki_Auth_Plugin {
 		$this->phpbb3_table_prefix = $table_prefix;
 		
         foreach (array("phpbb3_dbhost", "phpbb3_dbname", "phpbb3_dbuser", "phpbb3_dbpasswd") as $cfgvar) {
-            if (!$this->$cfgvar) {
+            if (is_null($this->$cfgvar)) {
 				msg ("Configuration error. Contact wiki administrator", -1);
 				dbglog("authphpbb3 error: phpbb3 config variable {$cfgvar} not set");
                  $this->success = false;
